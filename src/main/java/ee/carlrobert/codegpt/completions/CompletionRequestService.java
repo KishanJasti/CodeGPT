@@ -9,7 +9,9 @@ import ee.carlrobert.codegpt.credentials.OpenAICredentialsManager;
 import ee.carlrobert.codegpt.settings.service.ServiceType;
 import ee.carlrobert.codegpt.settings.state.AzureSettingsState;
 import ee.carlrobert.codegpt.settings.state.OpenAISettingsState;
+import ee.carlrobert.codegpt.settings.state.PalSettingsState;
 import ee.carlrobert.codegpt.settings.state.SettingsState;
+import ee.carlrobert.llm.client.pal.completion.PalCompletionRequest;
 import ee.carlrobert.llm.completion.CompletionEventListener;
 import okhttp3.sse.EventSource;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +34,11 @@ public final class CompletionRequestService {
       CompletionEventListener eventListener) {
     var requestProvider = new CompletionRequestProvider(conversation);
     switch (SettingsState.getInstance().getSelectedService()) {
+      case PAL:
+        var palSettings = PalSettingsState.getInstance();
+        PalCompletionRequest palCompletionRequest = requestProvider.buildPalCompletionRequest(palSettings.getModel(), message);
+        EventSource chatCompletion = CompletionClientProvider.getPalClient().getChatCompletion(palCompletionRequest, eventListener);
+        return chatCompletion;
       case OPENAI:
         var openAISettings = OpenAISettingsState.getInstance();
         return CompletionClientProvider.getOpenAIClient().getChatCompletion(

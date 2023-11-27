@@ -26,6 +26,7 @@ import ee.carlrobert.llm.client.openai.completion.OpenAICompletionRequest;
 import ee.carlrobert.llm.client.openai.completion.chat.OpenAIChatCompletionModel;
 import ee.carlrobert.llm.client.openai.completion.chat.request.OpenAIChatCompletionMessage;
 import ee.carlrobert.llm.client.openai.completion.chat.request.OpenAIChatCompletionRequest;
+import ee.carlrobert.llm.client.pal.completion.PalCompletionRequest;
 import ee.carlrobert.llm.client.you.completion.YouCompletionRequest;
 import ee.carlrobert.llm.client.you.completion.YouCompletionRequestMessage;
 import java.util.ArrayList;
@@ -127,6 +128,12 @@ public class CompletionRequestProvider {
     return buildOpenAIChatCompletionRequest(model, message, retry, false, null);
   }
 
+  public PalCompletionRequest buildPalCompletionRequest(
+          @Nullable String model,
+          Message message) {
+    var builder = new PalCompletionRequest.Builder(message.getPrompt()).setModel(model);
+    return (PalCompletionRequest) builder.build();
+  }
   public OpenAIChatCompletionRequest buildOpenAIChatCompletionRequest(
       @Nullable String model,
       Message message,

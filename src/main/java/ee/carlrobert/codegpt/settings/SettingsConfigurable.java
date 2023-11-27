@@ -7,11 +7,8 @@ import ee.carlrobert.codegpt.CodeGPTBundle;
 import ee.carlrobert.codegpt.conversations.ConversationsState;
 import ee.carlrobert.codegpt.credentials.AzureCredentialsManager;
 import ee.carlrobert.codegpt.credentials.OpenAICredentialsManager;
-import ee.carlrobert.codegpt.settings.state.AzureSettingsState;
-import ee.carlrobert.codegpt.settings.state.LlamaSettingsState;
-import ee.carlrobert.codegpt.settings.state.OpenAISettingsState;
-import ee.carlrobert.codegpt.settings.state.SettingsState;
-import ee.carlrobert.codegpt.settings.state.YouSettingsState;
+import ee.carlrobert.codegpt.credentials.PalCredentialsManager;
+import ee.carlrobert.codegpt.settings.state.*;
 import ee.carlrobert.codegpt.telemetry.TelemetryAction;
 import ee.carlrobert.codegpt.toolwindow.chat.standard.StandardChatToolWindowContentManager;
 import ee.carlrobert.codegpt.util.ApplicationUtil;
@@ -48,6 +45,7 @@ public class SettingsConfigurable implements Configurable {
   @Override
   public boolean isModified() {
     var settings = SettingsState.getInstance();
+    var palSettings = PalSettingsState.getInstance();
     var openAISettings = OpenAISettingsState.getInstance();
     var azureSettings = AzureSettingsState.getInstance();
     var llamaSettings = LlamaSettingsState.getInstance();
@@ -55,6 +53,7 @@ public class SettingsConfigurable implements Configurable {
     var serviceSelectionForm = settingsComponent.getServiceSelectionForm();
     return !settingsComponent.getDisplayName().equals(settings.getDisplayName())
         || isServiceChanged(settings)
+        || palSettings.isModified(serviceSelectionForm)
         || openAISettings.isModified(serviceSelectionForm)
         || azureSettings.isModified(serviceSelectionForm)
         || serviceSelectionForm.isDisplayWebSearchResults()
@@ -71,6 +70,7 @@ public class SettingsConfigurable implements Configurable {
       OpenAISettingsState.getInstance().setOpenAIQuotaExceeded(false);
     }
 
+    PalCredentialsManager.getInstance().setApiKey(serviceSelectionForm.getPalApiKey());
     OpenAICredentialsManager.getInstance().setApiKey(serviceSelectionForm.getOpenAIApiKey());
     AzureCredentialsManager.getInstance().setApiKey(serviceSelectionForm.getAzureOpenAIApiKey());
     AzureCredentialsManager.getInstance()
@@ -80,8 +80,10 @@ public class SettingsConfigurable implements Configurable {
     settings.setDisplayName(settingsComponent.getDisplayName());
     settings.setSelectedService(settingsComponent.getSelectedService());
 
+    var palSettings = PalSettingsState.getInstance();
     var azureSettings = AzureSettingsState.getInstance();
     var openAISettings = OpenAISettingsState.getInstance();
+    palSettings.apply(serviceSelectionForm);
     openAISettings.apply(serviceSelectionForm);
     azureSettings.apply(serviceSelectionForm);
     LlamaSettingsState.getInstance().apply(serviceSelectionForm);
@@ -109,6 +111,7 @@ public class SettingsConfigurable implements Configurable {
     settingsComponent.setDisplayName(settings.getDisplayName());
     settingsComponent.setSelectedService(settings.getSelectedService());
 
+    PalSettingsState.getInstance().reset(serviceSelectionForm);
     OpenAISettingsState.getInstance().reset(serviceSelectionForm);
     AzureSettingsState.getInstance().reset(serviceSelectionForm);
     LlamaSettingsState.getInstance().reset(serviceSelectionForm);

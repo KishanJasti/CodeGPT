@@ -45,6 +45,9 @@ public class SettingsState implements PersistentStateComponent<SettingsState> {
     if ("azure.chat.completion".equals(clientCode)) {
       setSelectedService(ServiceType.AZURE);
     }
+    if ("pal.chat.completion".equals(clientCode)) {
+      setSelectedService(ServiceType.PAL);
+    }
     if ("llama.chat.completion".equals(clientCode)) {
       setSelectedService(ServiceType.LLAMA_CPP);
       var llamaSettings = LlamaSettingsState.getInstance();
@@ -70,6 +73,8 @@ public class SettingsState implements PersistentStateComponent<SettingsState> {
         return AzureSettingsState.getInstance().getDeploymentId();
       case YOU:
         return "YouCode";
+      case  PAL:
+        return PalSettingsState.getInstance().getModel();
       case LLAMA_CPP:
         var llamaSettings = LlamaSettingsState.getInstance();
         if (llamaSettings.isUseCustomModel()) {

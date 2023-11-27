@@ -6,10 +6,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import ee.carlrobert.codegpt.conversations.message.Message;
 import ee.carlrobert.codegpt.settings.service.ServiceType;
-import ee.carlrobert.codegpt.settings.state.AzureSettingsState;
-import ee.carlrobert.codegpt.settings.state.LlamaSettingsState;
-import ee.carlrobert.codegpt.settings.state.OpenAISettingsState;
-import ee.carlrobert.codegpt.settings.state.SettingsState;
+import ee.carlrobert.codegpt.settings.state.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -188,6 +186,8 @@ public final class ConversationService {
 
   private static String getModelForSelectedService(ServiceType serviceType) {
     switch (serviceType) {
+      case PAL:
+        return PalSettingsState.getInstance().getModel();
       case OPENAI:
         return OpenAISettingsState.getInstance().getModel();
       case AZURE:

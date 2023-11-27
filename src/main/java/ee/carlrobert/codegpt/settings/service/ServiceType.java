@@ -3,6 +3,8 @@ package ee.carlrobert.codegpt.settings.service;
 import ee.carlrobert.codegpt.CodeGPTBundle;
 
 public enum ServiceType {
+  PAL("PAL", CodeGPTBundle.get("service.pal.title"), "pal.chat.completion"),
+
   OPENAI("OPENAI", CodeGPTBundle.get("service.openai.title"), "chat.completion"),
   AZURE("AZURE", CodeGPTBundle.get("service.azure.title"), "azure.chat.completion"),
   YOU("YOU", CodeGPTBundle.get("service.you.title"), "you.chat.completion"),

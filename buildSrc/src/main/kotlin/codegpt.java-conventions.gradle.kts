@@ -10,6 +10,7 @@ plugins {
 version = properties("pluginVersion")
 
 repositories {
+  mavenLocal()
   mavenCentral()
 }
 
@@ -23,7 +24,7 @@ checkstyle {
 }
 
 dependencies {
-  implementation("ee.carlrobert:llm-client:0.0.11")
+  implementation("ee.carlrobert:llm-client:0.0.12")
 }
 
 tasks {

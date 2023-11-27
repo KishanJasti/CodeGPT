@@ -17,11 +17,15 @@ import ee.carlrobert.codegpt.CodeGPTBundle;
 import ee.carlrobert.codegpt.completions.you.auth.AuthenticationNotifier;
 import ee.carlrobert.codegpt.credentials.AzureCredentialsManager;
 import ee.carlrobert.codegpt.credentials.OpenAICredentialsManager;
+import ee.carlrobert.codegpt.credentials.PalCredentialsManager;
 import ee.carlrobert.codegpt.settings.state.AzureSettingsState;
 import ee.carlrobert.codegpt.settings.state.OpenAISettingsState;
+import ee.carlrobert.codegpt.settings.state.PalSettingsState;
 import ee.carlrobert.codegpt.settings.state.YouSettingsState;
 import ee.carlrobert.codegpt.util.UIUtil;
 import ee.carlrobert.llm.client.openai.completion.chat.OpenAIChatCompletionModel;
+import ee.carlrobert.llm.client.pal.completion.chat.PalChatCompletionModel;
+
 import java.util.List;
 import java.util.Map;
 import javax.swing.ButtonGroup;
@@ -35,11 +39,14 @@ public class ServiceSelectionForm {
   private final Disposable parentDisposable;
 
   private final JBPasswordField openAIApiKeyField;
+  private final JBPasswordField palApiKeyField;
   private final JBTextField openAIBaseHostField;
+  private final JBTextField palBaseHostField;
   private final JBTextField openAIPathField;
   private final JBTextField openAIOrganizationField;
   private final JPanel openAIServiceSectionPanel;
   private final ComboBox<OpenAIChatCompletionModel> openAICompletionModelComboBox;
+  private final ComboBox<PalChatCompletionModel> palChatCompletionModelComboBox;
 
   private final JBRadioButton useAzureApiKeyAuthenticationRadioButton;
   private final JBPasswordField azureApiKeyField;
@@ -53,7 +60,7 @@ public class ServiceSelectionForm {
   private final JBTextField azureDeploymentIdField;
   private final JBTextField azureApiVersionField;
   private final JPanel azureServiceSectionPanel;
-
+  private final JPanel palServiceSectionPanel;
   private final JPanel youServiceSectionPanel;
   private final JBCheckBox displayWebSearchResultsCheckBox;
 
@@ -64,6 +71,10 @@ public class ServiceSelectionForm {
     openAIApiKeyField = new JBPasswordField();
     openAIApiKeyField.setColumns(30);
     openAIApiKeyField.setText(OpenAICredentialsManager.getInstance().getApiKey());
+
+    palApiKeyField = new JBPasswordField();
+    palApiKeyField.setColumns(30);
+    palApiKeyField.setText(PalCredentialsManager.getInstance().getPalApiKey());
 
     var azureSettings = AzureSettingsState.getInstance();
     useAzureApiKeyAuthenticationRadioButton = new JBRadioButton(
@@ -88,6 +99,16 @@ public class ServiceSelectionForm {
         .resizeX(false)
         .createPanel();
 
+    var palSettings = PalSettingsState.getInstance();
+    palBaseHostField = new JBTextField(palSettings.getBaseHost(), 30);
+
+    var selectedPalModel = PalChatCompletionModel.findByCode(palSettings.getModel());
+
+    palChatCompletionModelComboBox = new ComboBox<>(
+            new EnumComboBoxModel<>(PalChatCompletionModel.class));
+    palChatCompletionModelComboBox.setSelectedItem(selectedPalModel);
+
+
     var openAISettings = OpenAISettingsState.getInstance();
     openAIBaseHostField = new JBTextField(openAISettings.getBaseHost(), 30);
     openAIPathField = new JBTextField(openAISettings.getPath(), 30);
@@ -109,6 +130,7 @@ public class ServiceSelectionForm {
         CodeGPTBundle.get("settingsConfigurable.service.you.displayResults.label"),
         YouSettingsState.getInstance().isDisplayWebSearchResults());
 
+    palServiceSectionPanel = createPalServiceSectionPanel();
     openAIServiceSectionPanel = createOpenAIServiceSectionPanel();
     azureServiceSectionPanel = createAzureServiceSectionPanel();
     youServiceSectionPanel = createYouServiceSectionPanel();
@@ -163,6 +185,38 @@ public class ServiceSelectionForm {
         .addComponent(withEmptyLeftBorder(requestConfigurationPanel))
         .addComponentFillVertically(new JPanel(), 0)
         .getPanel();
+  }
+
+
+  private JPanel createPalServiceSectionPanel() {
+    var requestConfigurationPanel = UI.PanelFactory.grid()
+            .add(UI.PanelFactory.panel(palChatCompletionModelComboBox)
+                    .withLabel(CodeGPTBundle.get(
+                            "settingsConfigurable.shared.model.label"))
+                    .resizeX(false))
+            .add(UI.PanelFactory.panel(palBaseHostField)
+                    .withLabel(CodeGPTBundle.get(
+                            "settingsConfigurable.shared.baseHost.label"))
+                    .resizeX(false))
+            .createPanel();
+
+    var apiKeyFieldPanel = UI.PanelFactory.panel(palApiKeyField)
+            .withLabel(CodeGPTBundle.get("settingsConfigurable.shared.apiKey.label"))
+            .resizeX(false)
+            .withComment(
+                    CodeGPTBundle.get("settingsConfigurable.service.pal.apiKey.comment"))
+            .withCommentHyperlinkListener(UIUtil::handleHyperlinkClicked)
+            .createPanel();
+
+    return FormBuilder.createFormBuilder()
+            .addComponent(new TitledSeparator(
+                    CodeGPTBundle.get("settingsConfigurable.shared.authentication.title")))
+            .addComponent(withEmptyLeftBorder(apiKeyFieldPanel))
+            .addComponent(new TitledSeparator(
+                    CodeGPTBundle.get("settingsConfigurable.shared.requestConfiguration.title")))
+            .addComponent(withEmptyLeftBorder(requestConfigurationPanel))
+            .addComponentFillVertically(new JPanel(), 0)
+            .getPanel();
   }
 
   private JPanel createAzureServiceSectionPanel() {
@@ -253,6 +307,32 @@ public class ServiceSelectionForm {
         innerEntry.getValue().setVisible(innerEntry.equals(entry));
       }
     }));
+  }
+
+  public void setPalApiKey(String palApiKey) {
+    palApiKeyField.setText(palApiKey);
+  }
+
+  public String getPalApiKey() {
+    return new String(palApiKeyField.getPassword());
+  }
+
+  public void setPalBaseHost(String palBaseHost) {
+    palBaseHostField.setText(palBaseHost);
+  }
+
+  public String getPalBaseHost() {
+    return palBaseHostField.getText();
+  }
+
+  public void setPalModel(String model) {
+    palChatCompletionModelComboBox.setSelectedItem(PalChatCompletionModel.findByCode(model));
+  }
+
+  public String getPalModel() {
+    return ((PalChatCompletionModel) (palChatCompletionModelComboBox.getModel()
+            .getSelectedItem()))
+            .getCode();
   }
 
   public void setOpenAIApiKey(String apiKey) {
@@ -387,6 +467,10 @@ public class ServiceSelectionForm {
 
   public int getLlamaServerPort() {
     return llamaServiceSectionPanel.getServerPort();
+  }
+
+  public JPanel getPalServiceSectionPanel() {
+    return palServiceSectionPanel;
   }
 
   public JPanel getOpenAIServiceSectionPanel() {

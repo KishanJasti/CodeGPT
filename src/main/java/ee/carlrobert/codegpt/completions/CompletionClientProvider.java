@@ -4,17 +4,16 @@ import ee.carlrobert.codegpt.CodeGPTPlugin;
 import ee.carlrobert.codegpt.completions.you.YouUserManager;
 import ee.carlrobert.codegpt.credentials.AzureCredentialsManager;
 import ee.carlrobert.codegpt.credentials.OpenAICredentialsManager;
+import ee.carlrobert.codegpt.credentials.PalCredentialsManager;
 import ee.carlrobert.codegpt.settings.advanced.AdvancedSettingsState;
-import ee.carlrobert.codegpt.settings.state.AzureSettingsState;
-import ee.carlrobert.codegpt.settings.state.LlamaSettingsState;
-import ee.carlrobert.codegpt.settings.state.OpenAISettingsState;
-import ee.carlrobert.codegpt.settings.state.YouSettingsState;
+import ee.carlrobert.codegpt.settings.state.*;
 import ee.carlrobert.llm.client.Client;
 import ee.carlrobert.llm.client.ProxyAuthenticator;
 import ee.carlrobert.llm.client.azure.AzureClient;
 import ee.carlrobert.llm.client.azure.AzureCompletionRequestParams;
 import ee.carlrobert.llm.client.llama.LlamaClient;
 import ee.carlrobert.llm.client.openai.OpenAIClient;
+import ee.carlrobert.llm.client.pal.PalClient;
 import ee.carlrobert.llm.client.you.UTMParameters;
 import ee.carlrobert.llm.client.you.YouClient;
 import java.net.InetSocketAddress;
@@ -27,6 +26,9 @@ public class CompletionClientProvider {
     return getOpenAIClientBuilder().build();
   }
 
+  public static PalClient getPalClient() {
+    return getPalClientBuilder().build();
+  }
   public static AzureClient getAzureClient() {
     return getAzureClientBuilder().build();
   }
@@ -60,6 +62,13 @@ public class CompletionClientProvider {
     return (LlamaClient) addDefaultClientParams(builder).build();
   }
 
+  private static PalClient.Builder getPalClientBuilder() {
+    var settings = PalSettingsState.getInstance();
+    var builder = new PalClient.Builder()
+            .setApiKey(PalCredentialsManager.getInstance().getPalApiKey())
+            .setApiKey(settings.getModel());
+    return (PalClient.Builder) addDefaultClientParams(builder).setHost(settings.getBaseHost());
+  }
   private static OpenAIClient.Builder getOpenAIClientBuilder() {
     var settings = OpenAISettingsState.getInstance();
     var builder = new OpenAIClient

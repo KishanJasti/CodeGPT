@@ -33,6 +33,7 @@ public class SettingsComponent {
     serviceSelectionForm = new ServiceSelectionForm(parentDisposable);
     var cardLayout = new CardLayout();
     var cards = new JPanel(cardLayout);
+    cards.add(serviceSelectionForm.getPalServiceSectionPanel(), ServiceType.PAL.getCode());
     cards.add(serviceSelectionForm.getOpenAIServiceSectionPanel(), ServiceType.OPENAI.getCode());
     cards.add(serviceSelectionForm.getAzureServiceSectionPanel(), ServiceType.AZURE.getCode());
     cards.add(serviceSelectionForm.getYouServiceSectionPanel(), ServiceType.YOU.getCode());
@@ -42,7 +43,7 @@ public class SettingsComponent {
         .filter(it -> ServiceType.LLAMA_CPP != it || SystemInfoRt.isUnix)
         .collect(toList()));
     serviceComboBox = new ComboBox<>(serviceComboBoxModel);
-    serviceComboBox.setSelectedItem(ServiceType.OPENAI);
+    serviceComboBox.setSelectedItem(ServiceType.PAL);
     serviceComboBox.setPreferredSize(displayNameField.getPreferredSize());
     var serviceInputValidator = createInputValidator(parentDisposable, serviceComboBox);
     serviceInputValidator.revalidate();
